@@ -37,7 +37,7 @@ fn main() -> Result<()> {
     }
     let output_file = std::env::args().nth(2).unwrap();
     let models = std::env::current_exe()?.parent().unwrap().join("models");
-    let speaker_model = format!("{}", models.join("speaker_id.onnx").display());
+    let speaker_model = format!("{}", models.join("speaker.onnx").display());
     let vad_model = format!("{}", models.join("vad.onnx").display());
     let asr_model = format!("{}", models.join("asr.onnx").display());
     let asr_token_model = format!("{}", models.join("tokens.txt").display());
@@ -95,7 +95,7 @@ fn main() -> Result<()> {
                 };
                 output.push_str(
                     format!(
-                        "[{}] [{}s - {}s] {}",
+                        "[{}] [{}s - {}s] {}\n",
                         name,
                         start_sec,
                         start_sec + duration_sec,
@@ -132,7 +132,7 @@ fn main() -> Result<()> {
             };
             output.push_str(
                 format!(
-                    "[{}] [{}s - {}s] {}",
+                    "[{}] [{}s - {}s] {}\n",
                     name,
                     start_sec,
                     start_sec + duration_sec,
