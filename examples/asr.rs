@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use eyre::{bail, Result};
 use mimalloc::MiMalloc;
 use sherpa_rs::{
@@ -29,13 +31,14 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 
 fn main() -> Result<()> {
     // Read audio data from the file
-    let (sample_rate, mut samples) = read_audio_file(std::env::args().nth(1).unwrap().as_str())?;
+    let wav_file = std::env::args().nth(1).unwrap();
+    let (sample_rate, mut samples) = read_audio_file(wav_file.as_str())?;
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {
         samples.push(0.0);
     }
-    let output_file = std::env::args().nth(2).unwrap();
+
     let models = std::env::current_exe()?.parent().unwrap().join("models");
     let speaker_model = format!("{}", models.join("speaker.onnx").display());
     let vad_model = format!("{}", models.join("vad.onnx").display());
@@ -143,6 +146,6 @@ fn main() -> Result<()> {
             vad.pop();
         }
     }
-    std::fs::write(output_file, output)?;
+    std::fs::write(format!("{wav_file}.txt"), output)?;
     Ok(())
 }
