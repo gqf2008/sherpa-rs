@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use eyre::{bail, Result};
 use mimalloc::MiMalloc;
 use sherpa_rs::{
