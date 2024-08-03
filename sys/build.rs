@@ -68,8 +68,8 @@ fn main() {
     println!("cargo:rerun-if-changed=./sherpa-onnx");
 
     // Build with Cmake
-
-    let mut config = Config::new(&sherpa_dst);
+    // why not sherpa_src?
+    let mut config = Config::new(&sherpa_dst.join("sherpa-onnx"));
 
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
@@ -205,7 +205,13 @@ fn main() {
         .unwrap()
         .flatten()
         {
-            let target_dir = out_dir.parent().unwrap().parent().unwrap().parent().unwrap();
+            let target_dir = out_dir
+                .parent()
+                .unwrap()
+                .parent()
+                .unwrap()
+                .parent()
+                .unwrap();
             let dst = target_dir.join(entry.file_name().unwrap());
             std::fs::copy(entry, dst).unwrap();
         }
