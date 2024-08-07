@@ -28,6 +28,7 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 }
 
 fn main() -> Result<()> {
+    const THREAD_NUM: i32 = 8;
     // Read audio data from the file
     let wav_file = std::env::args().nth(1).unwrap();
     let (sample_rate, mut samples) = read_audio_file(wav_file.as_str())?;
@@ -43,7 +44,8 @@ fn main() -> Result<()> {
     let asr_model = format!("{}", models.join("asr.onnx").display());
     let asr_token_model = format!("{}", models.join("tokens.txt").display());
     // Initialize VAD
-    let extractor_config = speaker_id::ExtractorConfig::new(speaker_model, None, Some(4), false);
+    let extractor_config =
+        speaker_id::ExtractorConfig::new(speaker_model, None, Some(THREAD_NUM), false);
     let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(extractor_config).unwrap();
     let mut embedding_manager =
         embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
@@ -54,7 +56,7 @@ fn main() -> Result<()> {
         1,
         false,
         None,
-        8,
+        THREAD_NUM as _,
         None,
     );
     let mut speaker_counter = 0;
@@ -67,7 +69,7 @@ fn main() -> Result<()> {
         sample_rate,
         window_size.try_into().unwrap(),
         None,
-        Some(4),
+        Some(THREAD_NUM),
         Some(false),
     );
     let mut vad = Vad::new_from_config(config, 60.0 * 10.0).unwrap();
@@ -94,16 +96,15 @@ fn main() -> Result<()> {
                     speaker_counter += 1;
                     name
                 };
-                output.push_str(
-                    format!(
-                        "[{}] [{}s - {}s] {}\n",
-                        name,
-                        start_sec,
-                        start_sec + duration_sec,
-                        transcript.text,
-                    )
-                    .as_str(),
+                let line = format!(
+                    "[{}] [{}s - {}s] {}\n",
+                    name,
+                    start_sec,
+                    start_sec + duration_sec,
+                    transcript.text,
                 );
+                println!("{line}");
+                output.push_str(line.as_str());
 
                 vad.pop();
             }
@@ -131,16 +132,15 @@ fn main() -> Result<()> {
                 speaker_counter += 1;
                 name
             };
-            output.push_str(
-                format!(
-                    "[{}] [{}s - {}s] {}\n",
-                    name,
-                    start_sec,
-                    start_sec + duration_sec,
-                    transcript.text,
-                )
-                .as_str(),
+            let line = format!(
+                "[{}] [{}s - {}s] {}\n",
+                name,
+                start_sec,
+                start_sec + duration_sec,
+                transcript.text,
             );
+            println!("{line}");
+            output.push_str(line.as_str());
             vad.pop();
         }
     }

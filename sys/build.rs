@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn copy_folder(src: &Path, dst: &Path) {
-    std::fs::create_dir_all(dst).expect("Failed to create dst directory");
+    // std::fs::create_dir_all(dst).expect("Failed to create dst directory");
     if cfg!(unix) {
         std::process::Command::new("cp")
             .arg("-rf")
@@ -39,7 +39,7 @@ fn main() {
 
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
-        copy_folder(&sherpa_src, &sherpa_dst);
+        copy_folder(&sherpa_src, &out_dir);
     }
     // Speed up build
     env::set_var(
@@ -69,7 +69,8 @@ fn main() {
 
     // Build with Cmake
     // why not sherpa_src?
-    let mut config = Config::new(&sherpa_dst.join("sherpa-onnx"));
+
+    let mut config = Config::new(&sherpa_dst);
 
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
