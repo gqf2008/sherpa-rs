@@ -76,7 +76,7 @@ fn main() -> Result<()> {
         asr_token_model,
         512,
         16000,
-        num_threads,
+        num_threads as _,
     )?;
     let dirs: Vec<String> = std::env::args().skip(2).collect();
     ffmpeg::init()?;
