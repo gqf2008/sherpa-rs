@@ -8,6 +8,7 @@ use sherpa_rs::{
     transcribe::offline::OfflineRecognizer,
     vad::{Vad, VadConfig},
 };
+use std::path::Path;
 use walkdir::WalkDir;
 
 #[global_allocator]
@@ -57,7 +58,7 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
     Ok((sample_rate, samples))
 }
 
-fn asr1(trans: &mut Transcriber, wav: &str) -> anyhow::Result<String> {
+fn asr1(trans: &mut Transcriber, wav: &str) -> Result<String> {
     let (_, samples) = read_audio_file(wav)?;
     trans.reset()?;
     trans.transcribe(samples)

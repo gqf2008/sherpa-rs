@@ -701,6 +701,7 @@ dependencies = [
  "hound",
  "log",
  "mimalloc",
+ "serde_json",
  "sherpa-rs-sys",
  "walkdir",
 ]
