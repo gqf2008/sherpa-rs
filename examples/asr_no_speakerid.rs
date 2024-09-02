@@ -8,6 +8,7 @@ use sherpa_rs::{
     transcribe::offline::OfflineRecognizer,
     vad::{Vad, VadConfig},
 };
+use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 
@@ -80,6 +81,7 @@ fn main() -> Result<()> {
     )?;
     let dirs: Vec<String> = std::env::args().skip(2).collect();
     ffmpeg::init()?;
+    let idx = num_threads;
     let mut reg = Handlebars::new();
     reg.register_helper("inc", Box::new(inc));
     reg.register_helper("dec", Box::new(dec));
