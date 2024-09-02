@@ -66,7 +66,7 @@ fn asr1(trans: &mut Transcriber, wav: &str) -> Result<String> {
 }
 
 fn main() -> Result<()> {
-    let models = std::env::current_exe()?.parent().unwrap().join("models");
+    let models = Path::new(MODEL_PATH);
     let vad_model = format!("{}", models.join("vad.onnx").display());
     let asr_model = format!("{}", models.join("asr.onnx").display());
     let asr_token_model = format!("{}", models.join("tokens.txt").display());
