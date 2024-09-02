@@ -1,0 +1,2 @@
+[build]
+rustflags = ["-lssl", "-lcrypto", "-ldl", "-lpthread"]
