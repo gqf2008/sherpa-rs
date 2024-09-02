@@ -69,8 +69,11 @@ fn main() {
 
     // Build with Cmake
     // why not sherpa_src?
-
-    let mut config = Config::new(&sherpa_dst);
+    let mut config = if cfg!(windows) {
+        Config::new(&sherpa_src)
+    } else {
+        Config::new(&sherpa_dst)
+    };
 
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
