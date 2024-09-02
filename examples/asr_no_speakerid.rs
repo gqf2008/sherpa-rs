@@ -68,9 +68,15 @@ fn main() -> Result<()> {
     let vad_model = format!("{}", models.join("vad.onnx").display());
     let asr_model = format!("{}", models.join("asr.onnx").display());
     let asr_token_model = format!("{}", models.join("tokens.txt").display());
-    let mut trans = Transcriber::new(vad_model, asr_model, asr_token_model, 512, 16000, 8)?;
-
-    let idx: i32 = std::env::args().nth(1).unwrap().parse().unwrap();
+    let num_threads: i32 = std::env::args().nth(1).unwrap().parse().unwrap();
+    let mut trans = Transcriber::new(
+        vad_model,
+        asr_model,
+        asr_token_model,
+        512,
+        16000,
+        num_threads,
+    )?;
     let dirs: Vec<String> = std::env::args().skip(2).collect();
     ffmpeg::init()?;
     let mut reg = Handlebars::new();
