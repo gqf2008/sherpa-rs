@@ -28,7 +28,7 @@ fn main() {
 
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
-        copy_folder(&sherpa_src, &out_dir);
+        copy_folder(&sherpa_src, &sherpa_dst);
     }
     // Speed up build
     env::set_var(
