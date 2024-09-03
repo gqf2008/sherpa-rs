@@ -3,23 +3,9 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-fn copy_folder(src: &Path, dst: &Path) {
-    if let Err(err) = dircpy::copy_dir(src, dst) {
-        panic!(
-            "copy {} {} to {} {}, {}",
-            src.display(),
-            src.exists(),
-            dst.display(),
-            dst.exists(),
-            err
-        );
-    };
-}
-
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    // let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
     let build_shared_libs = cfg!(feature = "directml") || cfg!(feature = "cuda");
@@ -29,10 +15,6 @@ fn main() {
         "Release"
     };
 
-    // Prepare sherpa-onnx source
-    // if !sherpa_dst.exists() {
-    //     copy_folder(&sherpa_src, &out_dir);
-    // }
     // Speed up build
     env::set_var(
         "CMAKE_BUILD_PARALLEL_LEVEL",
