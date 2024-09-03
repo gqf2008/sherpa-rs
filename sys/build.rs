@@ -7,7 +7,9 @@ use std::process::Command;
 
 fn copy_folder(src: &Path, dst: &Path) {
     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-    dir::copy(src, dst, &options).unwrap();
+    if let Err(err) = dir::copy(src, dst, &options) {
+        panic!("copy {} to {}, {}", src.display(), dst.display(), err);
+    };
 }
 
 fn main() {
