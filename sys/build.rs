@@ -6,7 +6,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn copy_folder(src: &Path, dst: &Path) {
-    let options = CopyOptions::new(); //Initialize default values for CopyOptions
+    let options = CopyOptions::new().overwrite(true);
+    std::fs::create_dir_all(dst).ok();
     if let Err(err) = dir::copy(src, dst, &options) {
         panic!("copy {} to {}, {}", src.display(), dst.display(), err);
     };
