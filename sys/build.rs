@@ -1,27 +1,13 @@
 use cmake::Config;
+use fs_extra::dir;
+use fs_extra::dir::CopyOptions;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn copy_folder(src: &Path, dst: &Path) {
-    // std::fs::create_dir_all(dst).expect("Failed to create dst directory");
-    if cfg!(unix) {
-        std::process::Command::new("cp")
-            .arg("-rf")
-            .arg(src)
-            .arg(dst)
-            .status()
-            .expect("Failed to execute cp command");
-    }
-
-    if cfg!(windows) {
-        std::process::Command::new("robocopy.exe")
-            .arg("/e")
-            .arg(src)
-            .arg(dst)
-            .status()
-            .expect("Failed to execute xcopy command");
-    }
+    let options = CopyOptions::new(); //Initialize default values for CopyOptions
+    dir::copy(src, dst, &options).unwrap();
 }
 
 fn main() {
@@ -69,11 +55,7 @@ fn main() {
 
     // Build with Cmake
     // why not sherpa_src?
-    let mut config = if cfg!(windows) {
-        Config::new(&sherpa_src)
-    } else {
-        Config::new(&sherpa_dst)
-    };
+    let mut config = Config::new(&sherpa_dst);
 
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
