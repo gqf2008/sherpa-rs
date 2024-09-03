@@ -9,14 +9,20 @@ fn copy_folder(src: &Path, dst: &Path) {
     let options = CopyOptions::new().overwrite(true);
     std::fs::create_dir_all(dst).ok();
     if let Err(err) = dir::copy(src, dst, &options) {
-        panic!("copy {} to {}, {}", src.display(), dst.display(), err);
+        panic!(
+            "copy {}/{} to {}/{}, {}",
+            src.display(),
+            src.exists(),
+            dst.display(),
+            dst.exists(),
+            err
+        );
     };
 }
 
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    std::fs::create_dir(&out_dir).ok();
     let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
@@ -29,7 +35,7 @@ fn main() {
 
     // Prepare sherpa-onnx source
     if !sherpa_dst.exists() {
-        copy_folder(&sherpa_src, &sherpa_dst);
+        copy_folder(&sherpa_src, &out_dir);
     }
     // Speed up build
     env::set_var(
