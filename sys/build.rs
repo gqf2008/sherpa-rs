@@ -1,16 +1,12 @@
 use cmake::Config;
-use fs_extra::dir;
-use fs_extra::dir::CopyOptions;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn copy_folder(src: &Path, dst: &Path) {
-    let options = CopyOptions::new().overwrite(true);
-    std::fs::create_dir_all(dst).ok();
-    if let Err(err) = dir::copy(src, dst, &options) {
+    if let Err(err) = dircpy::copy_dir(src, dst) {
         panic!(
-            "copy {}/{} to {}/{}, {}",
+            "copy {} {} to {} {}, {}",
             src.display(),
             src.exists(),
             dst.display(),
