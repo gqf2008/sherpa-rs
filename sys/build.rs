@@ -19,7 +19,7 @@ fn copy_folder(src: &Path, dst: &Path) {
 fn main() {
     let target = env::var("TARGET").unwrap();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let sherpa_dst = out_dir.join("sherpa-onnx");
+    // let sherpa_dst = out_dir.join("sherpa-onnx");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Failed to get CARGO_MANIFEST_DIR");
     let sherpa_src = Path::new(&manifest_dir).join("sherpa-onnx");
     let build_shared_libs = cfg!(feature = "directml") || cfg!(feature = "cuda");
@@ -30,9 +30,9 @@ fn main() {
     };
 
     // Prepare sherpa-onnx source
-    if !sherpa_dst.exists() {
-        copy_folder(&sherpa_src, &out_dir);
-    }
+    // if !sherpa_dst.exists() {
+    //     copy_folder(&sherpa_src, &out_dir);
+    // }
     // Speed up build
     env::set_var(
         "CMAKE_BUILD_PARALLEL_LEVEL",
@@ -45,7 +45,7 @@ fn main() {
     // Bindings
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
-        .clang_arg(format!("-I{}", sherpa_dst.display()))
+        .clang_arg(format!("-I{}", sherpa_src.display()))
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Failed to generate bindings");
@@ -61,7 +61,7 @@ fn main() {
 
     // Build with Cmake
     // why not sherpa_src?
-    let mut config = Config::new(&sherpa_dst);
+    let mut config = Config::new(&sherpa_src);
 
     config
         .define("SHERPA_ONNX_ENABLE_C_API", "ON")
