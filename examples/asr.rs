@@ -125,11 +125,12 @@ fn main() -> Result<()> {
                     name
                 };
                 let line = format!(
-                    "[{}] [{}s - {}s] {:?}\n",
+                    "[{}] [{}s - {}s] [{}] {}\n",
                     name,
                     start_sec,
                     start_sec + duration_sec,
-                    transcript,
+                    transcript.emotion,
+                    transcript.text,
                 );
                 println!("{line}");
                 output.push_str(line.as_str());
@@ -161,11 +162,12 @@ fn main() -> Result<()> {
                 name
             };
             let line = format!(
-                "[{}] [{}s - {}s] {:?}\n",
+                "[{}] [{}s - {}s] [{}] {}\n",
                 name,
                 start_sec,
                 start_sec + duration_sec,
-                transcript,
+                transcript.emotion,
+                transcript.text,
             );
             println!("{line}");
             output.push_str(line.as_str());
