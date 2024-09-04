@@ -134,13 +134,17 @@ impl OfflineRecognizer {
             let result_ptr = sherpa_rs_sys::SherpaOnnxGetOfflineStreamResult(stream);
             let raw_result = result_ptr.read();
             let text = CStr::from_ptr(raw_result.text);
-            let text = text.to_str().unwrap().to_string();
+            let text = text.to_str().unwrap().replace("<|", "").replace("|>", "");
             let emotion = CStr::from_ptr(raw_result.emotion);
-            let emotion = emotion.to_str().unwrap().to_string();
+            let emotion = emotion
+                .to_str()
+                .unwrap()
+                .replace("<|", "")
+                .replace("|>", "");
             let lang = CStr::from_ptr(raw_result.lang);
-            let lang = lang.to_str().unwrap().to_string();
+            let lang = lang.to_str().unwrap().replace("<|", "").replace("|>", "");
             let event = CStr::from_ptr(raw_result.event);
-            let event = event.to_str().unwrap().to_string();
+            let event = event.to_str().unwrap().replace("<|", "").replace("|>", "");
             let result = OfflineRecognizerResult {
                 text,
                 emotion,

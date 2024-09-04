@@ -38,17 +38,16 @@ fn main() -> Result<()> {
         samples.push(0.0);
     }
 
-    let models = std::env::current_exe()?.parent().unwrap().join("models");
+    let models = std::env::current_exe()?
+        .parent()
+        .unwrap()
+        .join("models")
+        .join("sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17");
     let speaker_model = format!("{}", models.join("speaker.onnx").display());
     let vad_model = format!("{}", models.join("vad.onnx").display());
-    let asr_model = format!("{}", models.join("asr.onnx").display());
+    let asr_model = format!("{}", models.join("model.int8.onnx").display());
     let asr_token_model = format!("{}", models.join("tokens.txt").display());
-    // Initialize VAD
-    let extractor_config =
-        speaker_id::ExtractorConfig::new(speaker_model, None, Some(THREAD_NUM), false);
-    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(extractor_config).unwrap();
-    let mut embedding_manager =
-        embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap()); // Assuming dimension 512 for embeddings
+    // Assuming dimension 512 for embeddings
     let mut recognizer = OfflineRecognizer::user_sense_voice(
         asr_model,
         asr_token_model,
@@ -59,6 +58,35 @@ fn main() -> Result<()> {
         THREAD_NUM as _,
         None,
     );
+
+    // let models = std::env::current_exe()?
+    //     .parent()
+    //     .unwrap()
+    //     .join("models")
+    //     .join("sherpa-onnx-whisper-large-v3");
+    // let speaker_model = format!("{}", models.join("speaker.onnx").display());
+    // let vad_model = format!("{}", models.join("vad.onnx").display());
+    // let decoder_model = format!("{}", models.join("large-v3-decoder.int8.onnx").display());
+    // let encoder_model = format!("{}", models.join("large-v3-encoder.int8.onnx").display());
+    // let asr_token_model = format!("{}", models.join("large-v3-tokens.txt").display());
+
+    // let mut recognizer = OfflineRecognizer::user_whisper(
+    //     decoder_model,
+    //     encoder_model,
+    //     asr_token_model,
+    //     "zh".into(),
+    //     false,
+    //     None,
+    //     THREAD_NUM as _,
+    //     None,
+    // );
+
+    // Initialize VAD
+    let extractor_config =
+        speaker_id::ExtractorConfig::new(speaker_model, None, Some(THREAD_NUM), false);
+    let mut extractor = speaker_id::EmbeddingExtractor::new_from_config(extractor_config).unwrap();
+    let mut embedding_manager =
+        embedding_manager::EmbeddingManager::new(extractor.embedding_size.try_into().unwrap());
     let mut speaker_counter = 0;
     let window_size: usize = 512;
     let config = VadConfig::new(

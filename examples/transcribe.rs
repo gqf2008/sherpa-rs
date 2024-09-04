@@ -27,21 +27,36 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
 }
 
 fn main() -> Result<()> {
-    let (sample_rate, samples) = read_audio_file("motivation.wav")?;
+    let wav_file = std::env::args().nth(1).unwrap();
+    let (sample_rate, mut samples) = read_audio_file(wav_file.as_str())?;
 
+    // Pad with 3 seconds of slience so vad will able to detect stop
+    for _ in 0..3 * sample_rate {
+        samples.push(0.0);
+    }
     // Check if the sample rate is 16000
     if sample_rate != 16000 {
         bail!("The sample rate must be 16000.");
     }
+    let models = std::env::current_exe()?
+        .parent()
+        .unwrap()
+        .join("models")
+        .join("sherpa-onnx-whisper-large-v3");
+    //let speaker_model = format!("{}", models.join("speaker.onnx").display());
+    //let vad_model = format!("{}", models.join("vad.onnx").display());
+    let decoder_model = format!("{}", models.join("large-v3-decoder.int8.onnx").display());
+    let encoder_model = format!("{}", models.join("large-v3-encoder.int8.onnx").display());
+    let asr_token_model = format!("{}", models.join("large-v3-tokens.txt").display());
 
     let mut recognizer = WhisperRecognizer::new(
-        "sherpa-onnx-whisper-tiny/tiny-decoder.onnx".into(),
-        "sherpa-onnx-whisper-tiny/tiny-encoder.onnx".into(),
-        "sherpa-onnx-whisper-tiny/tiny-tokens.txt".into(),
-        "en".into(),
+        decoder_model,
+        encoder_model,
+        asr_token_model,
+        "zh".into(),
         Some(true),
         Some("directml".into()),
-        None,
+        Some(8),
         None,
     );
     let result = recognizer.transcribe(sample_rate, samples);

@@ -12,3 +12,4 @@ sherpa-onnx-whisper*
 *.txt
 *.exe
 asr
+/models

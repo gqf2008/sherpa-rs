@@ -12,7 +12,9 @@ pub struct WhisperRecognizer {
 #[derive(Debug)]
 pub struct WhisperRecognizerResult {
     pub text: String,
-    // pub timestamps: Vec<f32>,
+    pub lang: String,
+    pub emotion: String,
+    pub event: String,
 }
 
 impl WhisperRecognizer {
@@ -115,9 +117,21 @@ impl WhisperRecognizer {
             let raw_result = result_ptr.read();
             let text = CStr::from_ptr(raw_result.text);
             let text = text.to_str().unwrap().to_string();
-            // let timestamps: &[f32] =
-            // std::slice::from_raw_parts(raw_result.timestamps, raw_result.count as usize);
-            let result = WhisperRecognizerResult { text };
+
+            let event = CStr::from_ptr(raw_result.event);
+            let event = event.to_str().unwrap().to_string();
+
+            let emotion = CStr::from_ptr(raw_result.emotion);
+            let emotion = emotion.to_str().unwrap().to_string();
+
+            let lang = CStr::from_ptr(raw_result.lang);
+            let lang = lang.to_str().unwrap().to_string();
+            let result = WhisperRecognizerResult {
+                text,
+                event,
+                emotion,
+                lang,
+            };
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
