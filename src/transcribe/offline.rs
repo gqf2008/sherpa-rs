@@ -9,6 +9,9 @@ pub struct OfflineRecognizer {
 #[derive(Debug)]
 pub struct OfflineRecognizerResult {
     pub text: String,
+    pub event: String,
+    pub lang: String,
+    pub emotion: String,
 }
 
 impl OfflineRecognizer {
@@ -132,7 +135,18 @@ impl OfflineRecognizer {
             let raw_result = result_ptr.read();
             let text = CStr::from_ptr(raw_result.text);
             let text = text.to_str().unwrap().to_string();
-            let result = OfflineRecognizerResult { text };
+            let emotion = CStr::from_ptr(raw_result.emotion);
+            let emotion = emotion.to_str().unwrap().to_string();
+            let lang = CStr::from_ptr(raw_result.lang);
+            let lang = lang.to_str().unwrap().to_string();
+            let event = CStr::from_ptr(raw_result.event);
+            let event = event.to_str().unwrap().to_string();
+            let result = OfflineRecognizerResult {
+                text,
+                emotion,
+                lang,
+                event,
+            };
             // Free
             sherpa_rs_sys::SherpaOnnxDestroyOfflineRecognizerResult(result_ptr);
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);

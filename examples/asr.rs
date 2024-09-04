@@ -52,7 +52,7 @@ fn main() -> Result<()> {
     let mut recognizer = OfflineRecognizer::user_sense_voice(
         asr_model,
         asr_token_model,
-        "auto".into(),
+        "zh".into(),
         1,
         false,
         None,
@@ -97,11 +97,11 @@ fn main() -> Result<()> {
                     name
                 };
                 let line = format!(
-                    "[{}] [{}s - {}s] {}\n",
+                    "[{}] [{}s - {}s] {:?}\n",
                     name,
                     start_sec,
                     start_sec + duration_sec,
-                    transcript.text,
+                    transcript,
                 );
                 println!("{line}");
                 output.push_str(line.as_str());
@@ -133,11 +133,11 @@ fn main() -> Result<()> {
                 name
             };
             let line = format!(
-                "[{}] [{}s - {}s] {}\n",
+                "[{}] [{}s - {}s] {:?}\n",
                 name,
                 start_sec,
                 start_sec + duration_sec,
-                transcript.text,
+                transcript,
             );
             println!("{line}");
             output.push_str(line.as_str());
