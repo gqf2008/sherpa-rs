@@ -1,4 +1,28 @@
+[env]
+# CC = "D:\\toolchain\\msys64\\mingw64\\bin\\x86_64-w64-mingw32-cc.exe"
+FFMPEG_DIR = "D:\\workspace\\vcpkg\\installed\\x64-windows-static"
+CARGO_FEATURE_STATIC = "1"
+
 [build]
+
+
+[target.'cfg(all(target_os="windows"))']
+rustflags = [
+    # "-C",
+    # "target-feature=-crt-static",
+    # "-Ccontrol-flow-guard",
+    # "-C",
+    # "link-arg=/NODEFAULTLIB:msvcrt.lib -lmsvcrtd",
+    # "-C",
+    # "link-arg=/NODEFAULTLIB:msvcprt.lib -lmsvcprtd",
+    "-C",
+    "link-arg=/NODEFAULTLIB:libcmt.lib",
+    # "-C",
+    # "link-arg=/DEFAULTLIB:msvcrtd.lib",
+    # "-C",
+    # "link-arg=/DEFAULTLIB:msvcprtd.lib",
+]
+
 
 [target.x86_64-unknown-linux-gnu]
 rustflags = ["-lssl", "-lcrypto", "-ldl", "-lpthread"]

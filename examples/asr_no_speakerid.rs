@@ -117,7 +117,8 @@ fn main() -> Result<()> {
             if records.len() > 0 {
                 let out = reg.render("call", &records)?;
                 let txt_file = format!("{csv}.txt");
-                if let Ok(true) = std::fs::exists(&txt_file) {
+
+                if let Ok(true) = std::path::Path::try_exists(std::path::Path::new(&txt_file)) {
                     std::fs::rename(&txt_file, format!("{txt_file}.txt")).ok();
                 }
                 if let Err(err) = std::fs::write(&txt_file, out) {
