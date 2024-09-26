@@ -112,7 +112,142 @@ impl OnlineRecognizer {
         }
     }
 
-    pub fn transcribe(
+    pub fn with_paraformer(
+        decoder: String,
+        encoder: String,
+
+        tokens: String,
+        debug: bool,
+        num_threads: u32,
+        decoding_method: Option<String>,
+        provider: Option<String>,
+        hotwords_file: Option<String>,
+        hotwords_score: Option<f32>,
+    ) -> Self {
+        let decoder_c = cstr!(decoder);
+        let encoder_c = cstr!(encoder);
+
+        let tokens_c = cstr!(tokens);
+        let debug = if debug { 1 } else { 0 };
+        let provider_c = cstr!(provider.unwrap_or(get_default_provider()));
+        let decoding_method = cstr!(decoding_method.unwrap_or("greedy_search".to_string()));
+
+        let model_config = unsafe {
+            let mut model_config =
+                std::mem::MaybeUninit::<sherpa_rs_sys::SherpaOnnxOnlineModelConfig>::zeroed();
+            model_config.assume_init_mut().debug = debug;
+            model_config.assume_init_mut().num_threads = num_threads as _;
+            model_config.assume_init_mut().provider = provider_c.into_raw();
+            model_config.assume_init_mut().tokens = tokens_c.into_raw();
+
+            model_config.assume_init_mut().paraformer =
+                sherpa_rs_sys::SherpaOnnxOnlineParaformerModelConfig {
+                    decoder: decoder_c.into_raw(),
+                    encoder: encoder_c.into_raw(),
+                };
+            model_config.assume_init()
+        };
+
+        let config = unsafe {
+            let mut config =
+                std::mem::MaybeUninit::<sherpa_rs_sys::SherpaOnnxOnlineRecognizerConfig>::zeroed();
+            config.assume_init_mut().decoding_method = decoding_method.into_raw();
+            config.assume_init_mut().model_config = model_config;
+            config.assume_init_mut().max_active_paths = 4;
+            config.assume_init_mut().enable_endpoint = 1;
+            config.assume_init_mut().rule1_min_trailing_silence = 2.4;
+            config.assume_init_mut().rule2_min_trailing_silence = 1.2;
+            config.assume_init_mut().rule3_min_utterance_length = 300.;
+            config.assume_init_mut().feat_config = sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                sample_rate: 16000,
+                feature_dim: 80,
+            };
+            hotwords_file.map(|hotwords_file| {
+                config.assume_init_mut().hotwords_file = cstr!(hotwords_file).into_raw();
+            });
+            hotwords_score.map(|hotwords_score| {
+                config.assume_init_mut().hotwords_score = hotwords_score;
+            });
+            config.assume_init()
+        };
+        let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOnlineRecognizer(&config) };
+        let stream: *mut sherpa_rs_sys::SherpaOnnxOnlineStream =
+            unsafe { sherpa_rs_sys::SherpaOnnxCreateOnlineStream(recognizer) };
+        // let display: *const sherpa_rs_sys::SherpaOnnxDisplay =
+        //     unsafe { sherpa_rs_sys::SherpaOnnxCreateDisplay(50) };
+        Self {
+            recognizer,
+            stream,
+            //  display,
+        }
+    }
+
+    pub fn with_zipformer2_ctc(
+        model: String,
+        tokens: String,
+        debug: bool,
+        num_threads: u32,
+        decoding_method: Option<String>,
+        provider: Option<String>,
+        hotwords_file: Option<String>,
+        hotwords_score: Option<f32>,
+    ) -> Self {
+        let model = cstr!(model);
+        let tokens_c = cstr!(tokens);
+        let debug = if debug { 1 } else { 0 };
+        let provider_c = cstr!(provider.unwrap_or(get_default_provider()));
+        let decoding_method = cstr!(decoding_method.unwrap_or("greedy_search".to_string()));
+
+        let model_config = unsafe {
+            let mut model_config =
+                std::mem::MaybeUninit::<sherpa_rs_sys::SherpaOnnxOnlineModelConfig>::zeroed();
+            model_config.assume_init_mut().debug = debug;
+            model_config.assume_init_mut().num_threads = num_threads as _;
+            model_config.assume_init_mut().provider = provider_c.into_raw();
+            model_config.assume_init_mut().tokens = tokens_c.into_raw();
+
+            model_config.assume_init_mut().zipformer2_ctc =
+                sherpa_rs_sys::SherpaOnnxOnlineZipformer2CtcModelConfig {
+                    model: model.into_raw(),
+                };
+            model_config.assume_init()
+        };
+
+        let config = unsafe {
+            let mut config =
+                std::mem::MaybeUninit::<sherpa_rs_sys::SherpaOnnxOnlineRecognizerConfig>::zeroed();
+            config.assume_init_mut().decoding_method = decoding_method.into_raw();
+            config.assume_init_mut().model_config = model_config;
+            config.assume_init_mut().max_active_paths = 4;
+            config.assume_init_mut().enable_endpoint = 1;
+            config.assume_init_mut().rule1_min_trailing_silence = 2.4;
+            config.assume_init_mut().rule2_min_trailing_silence = 1.2;
+            config.assume_init_mut().rule3_min_utterance_length = 300.;
+            config.assume_init_mut().feat_config = sherpa_rs_sys::SherpaOnnxFeatureConfig {
+                sample_rate: 16000,
+                feature_dim: 80,
+            };
+            hotwords_file.map(|hotwords_file| {
+                config.assume_init_mut().hotwords_file = cstr!(hotwords_file).into_raw();
+            });
+            hotwords_score.map(|hotwords_score| {
+                config.assume_init_mut().hotwords_score = hotwords_score;
+            });
+            config.assume_init()
+        };
+        let recognizer = unsafe { sherpa_rs_sys::SherpaOnnxCreateOnlineRecognizer(&config) };
+        let stream: *mut sherpa_rs_sys::SherpaOnnxOnlineStream =
+            unsafe { sherpa_rs_sys::SherpaOnnxCreateOnlineStream(recognizer) };
+        // let display: *const sherpa_rs_sys::SherpaOnnxDisplay =
+        //     unsafe { sherpa_rs_sys::SherpaOnnxCreateDisplay(50) };
+        Self {
+            recognizer,
+            stream,
+            //  display,
+        }
+    }
+
+    fn transcribe(
         &mut self,
         sample_rate: i32,
         samples: Vec<f32>,
