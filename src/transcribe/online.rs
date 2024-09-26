@@ -135,16 +135,16 @@ impl OnlineRecognizer {
         let model_config = unsafe {
             let mut model_config =
                 std::mem::MaybeUninit::<sherpa_rs_sys::SherpaOnnxOnlineModelConfig>::zeroed();
-            model_config.assume_init_mut().debug = debug;
-            model_config.assume_init_mut().num_threads = num_threads as _;
-            model_config.assume_init_mut().provider = provider_c.into_raw();
-            model_config.assume_init_mut().tokens = tokens_c.into_raw();
+            let config = model_config.assume_init_mut();
+            config.debug = debug;
+            config.num_threads = num_threads as _;
+            config.provider = provider_c.into_raw();
+            config.tokens = tokens_c.into_raw();
 
-            model_config.assume_init_mut().paraformer =
-                sherpa_rs_sys::SherpaOnnxOnlineParaformerModelConfig {
-                    decoder: decoder_c.into_raw(),
-                    encoder: encoder_c.into_raw(),
-                };
+            config.paraformer = sherpa_rs_sys::SherpaOnnxOnlineParaformerModelConfig {
+                decoder: decoder_c.into_raw(),
+                encoder: encoder_c.into_raw(),
+            };
             model_config.assume_init()
         };
 
