@@ -43,4 +43,11 @@ fn main() {
         println!("cargo:rustc-link-lib={}=zlib", ffmpeg_ty);
         println!("cargo:rustc-link-lib={}=bz2", ffmpeg_ty);
     }
+
+    if cfg!(target_os = "linux") {
+        let libs = ["ssl", "crypto", "dl", "pthread"];
+        libs.iter().for_each(|lib| {
+            println!("cargo:rustc-link-lib=static={}", lib);
+        });
+    }
 }
