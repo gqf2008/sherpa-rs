@@ -1,11 +1,12 @@
+use anyhow::anyhow;
 use eyre::{bail, Result};
 use ffmpeg::{codec, filter, format, frame, media};
 use ffmpeg_next as ffmpeg;
 use handlebars::{handlebars_helper, Handlebars, JsonRender};
-use hound::SampleFormat;
 use mimalloc::MiMalloc;
 use sherpa_rs::{
     transcribe::offline::OfflineRecognizer,
+    transcribe::Transcribe,
     vad::{Vad, VadConfig},
 };
 use std::collections::HashMap;
@@ -59,13 +60,13 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
     Ok((sample_rate, samples))
 }
 
-fn asr1(trans: &mut Transcriber, wav: &str) -> Result<String> {
-    let (_, samples) = read_audio_file(wav)?;
-    trans.reset()?;
+fn asr1(trans: &mut Transcriber, wav: &str) -> anyhow::Result<String> {
+    let (_, samples) = read_audio_file(wav).map_err(|err| anyhow!("{err}"))?;
+    trans.reset().map_err(|err| anyhow!("{err}"))?;
     trans.transcribe(samples)
 }
 
-fn main() -> Result<()> {
+fn main() -> anyhow::Result<()> {
     let models = Path::new(MODEL_PATH);
     let vad_model = format!("{}", models.join("vad.onnx").display());
     let asr_model = format!("{}", models.join("asr.onnx").display());
@@ -150,8 +151,8 @@ impl Transcriber {
         window_size: usize,
         sample_rate: i32,
         num_threads: u32,
-    ) -> Result<Self> {
-        let recognizer = OfflineRecognizer::user_sense_voice(
+    ) -> anyhow::Result<Self> {
+        let recognizer = OfflineRecognizer::with_sense_voice(
             asr_model,
             asr_token_model,
             "zh".into(),
@@ -174,7 +175,7 @@ impl Transcriber {
             Some(num_threads as _),
             Some(false),
         );
-        let vad = Vad::new_from_config(config, 60.0 * 10.0)?;
+        let vad = Vad::new_from_config(config, 60.0 * 10.0).map_err(|err| anyhow!("{err}"))?;
         Ok(Self {
             vad,
             recognizer,
@@ -202,7 +203,7 @@ impl Transcriber {
         Ok(())
     }
 
-    pub fn transcribe(&mut self, samples: Vec<f32>) -> Result<String> {
+    pub fn transcribe(&mut self, samples: Vec<f32>) -> anyhow::Result<String> {
         let mut index = 0;
         let mut output = String::new();
 
@@ -216,7 +217,7 @@ impl Transcriber {
                     let duration_sec = (segment.samples.len() as f32) / self.sample_rate as f32;
                     let transcript = self
                         .recognizer
-                        .transcribe(self.sample_rate, segment.samples.clone());
+                        .transcribe(self.sample_rate, segment.samples.clone())?;
 
                     let line = format!(
                         "[{}s - {}s] {}\n",
@@ -242,7 +243,7 @@ impl Transcriber {
                 let duration_sec = (segment.samples.len() as f32) / self.sample_rate as f32;
                 let transcript = self
                     .recognizer
-                    .transcribe(self.sample_rate, segment.samples.clone());
+                    .transcribe(self.sample_rate, segment.samples.clone())?;
 
                 let line = format!(
                     "[{}s - {}s] {}\n",

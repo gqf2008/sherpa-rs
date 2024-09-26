@@ -1,6 +1,8 @@
 use crate::{cstr, get_default_provider};
 use std::ffi::{CStr, CString};
 
+use super::Transcribe;
+
 #[derive(Debug)]
 pub struct OfflineRecognizer {
     recognizer: *mut sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
@@ -15,7 +17,7 @@ pub struct OfflineRecognizerResult {
 }
 
 impl OfflineRecognizer {
-    pub fn user_whisper(
+    pub fn with_whisper(
         decoder: String,
         encoder: String,
         tokens: String,
@@ -75,7 +77,7 @@ impl OfflineRecognizer {
         Self { recognizer }
     }
 
-    pub fn user_sense_voice(
+    pub fn with_sense_voice(
         model: String,
         tokens: String,
         language: String,
@@ -121,7 +123,7 @@ impl OfflineRecognizer {
         Self { recognizer }
     }
 
-    pub fn transcribe(&mut self, sample_rate: i32, samples: Vec<f32>) -> OfflineRecognizerResult {
+    fn transcribe(&mut self, sample_rate: i32, samples: Vec<f32>) -> OfflineRecognizerResult {
         unsafe {
             let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
@@ -156,6 +158,17 @@ impl OfflineRecognizer {
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
             return result;
         }
+    }
+}
+
+impl Transcribe<OfflineRecognizerResult> for OfflineRecognizer {
+    fn transcribe(
+        &mut self,
+        sample_rate: i32,
+        samples: Vec<f32>,
+    ) -> anyhow::Result<OfflineRecognizerResult> {
+        let result = self.transcribe(sample_rate, samples);
+        Ok(result)
     }
 }
 

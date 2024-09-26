@@ -7,6 +7,7 @@ cargo run --example transcribe
 
 use eyre::{bail, Result};
 use sherpa_rs::transcribe::whisper::WhisperRecognizer;
+use sherpa_rs::transcribe::Transcribe;
 
 fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
     let mut reader = hound::WavReader::open(path)?;

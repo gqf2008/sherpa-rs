@@ -11,6 +11,7 @@ use eyre::{bail, Result};
 use sherpa_rs::{
     embedding_manager, speaker_id,
     transcribe::whisper::WhisperRecognizer,
+    transcribe::Transcribe,
     vad::{Vad, VadConfig},
 };
 
@@ -88,7 +89,9 @@ fn main() -> Result<()> {
                 let segment = vad.front();
                 let start_sec = (segment.start as f32) / sample_rate as f32;
                 let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-                let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
+                let transcript = recognizer
+                    .transcribe(sample_rate, segment.samples.clone())
+                    .unwrap();
 
                 // Compute the speaker embedding
                 let mut embedding =
@@ -123,7 +126,9 @@ fn main() -> Result<()> {
             let segment = vad.front();
             let start_sec = (segment.start as f32) / sample_rate as f32;
             let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-            let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
+            let transcript = recognizer
+                .transcribe(sample_rate, segment.samples.clone())
+                .unwrap();
 
             // Compute the speaker embedding
             let mut embedding =

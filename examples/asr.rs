@@ -1,8 +1,10 @@
+use anyhow::anyhow;
 use eyre::{bail, Result};
 use mimalloc::MiMalloc;
 use sherpa_rs::{
     embedding_manager, speaker_id,
     transcribe::offline::OfflineRecognizer,
+    transcribe::Transcribe,
     vad::{Vad, VadConfig},
 };
 
@@ -27,11 +29,12 @@ fn read_audio_file(path: &str) -> Result<(i32, Vec<f32>)> {
     Ok((sample_rate, samples))
 }
 
-fn main() -> Result<()> {
+fn main() -> anyhow::Result<()> {
     const THREAD_NUM: i32 = 8;
     // Read audio data from the file
     let wav_file = std::env::args().nth(1).unwrap();
-    let (sample_rate, mut samples) = read_audio_file(wav_file.as_str())?;
+    let (sample_rate, mut samples) =
+        read_audio_file(wav_file.as_str()).map_err(|err| anyhow!("{}", err))?;
 
     // Pad with 3 seconds of slience so vad will able to detect stop
     for _ in 0..3 * sample_rate {
@@ -48,7 +51,7 @@ fn main() -> Result<()> {
     let asr_model = format!("{}", models.join("model.int8.onnx").display());
     let asr_token_model = format!("{}", models.join("tokens.txt").display());
     // Assuming dimension 512 for embeddings
-    let mut recognizer = OfflineRecognizer::user_sense_voice(
+    let mut recognizer = OfflineRecognizer::with_sense_voice(
         asr_model,
         asr_token_model,
         "zh".into(),
@@ -111,16 +114,19 @@ fn main() -> Result<()> {
                 let segment = vad.front();
                 let start_sec = (segment.start as f32) / sample_rate as f32;
                 let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-                let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
+                let transcript = recognizer.transcribe(sample_rate, segment.samples.clone())?;
                 // Compute the speaker embedding
-                let mut embedding =
-                    extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+                let mut embedding = extractor
+                    .compute_speaker_embedding(sample_rate, segment.samples)
+                    .map_err(|err| anyhow!("{}", err))?;
                 let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.4) {
                     speaker_name
                 } else {
                     // Register a new speaker and add the embedding
                     let name = format!("speaker {}", speaker_counter);
-                    embedding_manager.add(name.clone(), &mut embedding)?;
+                    embedding_manager
+                        .add(name.clone(), &mut embedding)
+                        .map_err(|err| anyhow!("{}", err))?;
                     speaker_counter += 1;
                     name
                 };
@@ -148,16 +154,19 @@ fn main() -> Result<()> {
             let segment = vad.front();
             let start_sec = (segment.start as f32) / sample_rate as f32;
             let duration_sec = (segment.samples.len() as f32) / sample_rate as f32;
-            let transcript = recognizer.transcribe(sample_rate, segment.samples.clone());
+            let transcript = recognizer.transcribe(sample_rate, segment.samples.clone())?;
             // Compute the speaker embedding
-            let mut embedding =
-                extractor.compute_speaker_embedding(sample_rate, segment.samples)?;
+            let mut embedding = extractor
+                .compute_speaker_embedding(sample_rate, segment.samples)
+                .map_err(|err| anyhow!("{}", err))?;
             let name = if let Some(speaker_name) = embedding_manager.search(&embedding, 0.4) {
                 speaker_name
             } else {
                 // Register a new speaker and add the embedding
                 let name = format!("speaker {}", speaker_counter);
-                embedding_manager.add(name.clone(), &mut embedding)?;
+                embedding_manager
+                    .add(name.clone(), &mut embedding)
+                    .map_err(|err| anyhow!("{}", err))?;
                 speaker_counter += 1;
                 name
             };

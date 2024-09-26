@@ -4,6 +4,8 @@ use std::{
     ptr::null,
 };
 
+use super::Transcribe;
+
 #[derive(Debug)]
 pub struct WhisperRecognizer {
     recognizer: *mut sherpa_rs_sys::SherpaOnnxOfflineRecognizer,
@@ -103,7 +105,7 @@ impl WhisperRecognizer {
         Self { recognizer }
     }
 
-    pub fn transcribe(&mut self, sample_rate: i32, samples: Vec<f32>) -> WhisperRecognizerResult {
+    fn transcribe(&mut self, sample_rate: i32, samples: Vec<f32>) -> WhisperRecognizerResult {
         unsafe {
             let stream = sherpa_rs_sys::SherpaOnnxCreateOfflineStream(self.recognizer);
             sherpa_rs_sys::SherpaOnnxAcceptWaveformOffline(
@@ -137,6 +139,17 @@ impl WhisperRecognizer {
             sherpa_rs_sys::SherpaOnnxDestroyOfflineStream(stream);
             return result;
         }
+    }
+}
+
+impl Transcribe<WhisperRecognizerResult> for WhisperRecognizer {
+    fn transcribe(
+        &mut self,
+        sample_rate: i32,
+        samples: Vec<f32>,
+    ) -> anyhow::Result<WhisperRecognizerResult> {
+        let result = self.transcribe(sample_rate, samples);
+        Ok(result)
     }
 }
 
