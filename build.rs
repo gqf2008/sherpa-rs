@@ -45,7 +45,11 @@ fn main() {
     }
 
     if cfg!(target_os = "linux") {
-        let libs = ["ssl.a", "crypto.a", "dl.a", "pthread.a"];
+        let libs = ["ssl", "crypto", "dl", "pthread"];
+        let lib_path = ["/usr/lib/x86_64-linux-gnu"];
+        lib_path.iter().for_each(|lib_path| {
+            println!("cargo::rustc-link-search=all={}", lib_path);
+        });
         libs.iter().for_each(|lib| {
             println!("cargo:rustc-link-lib=static={}", lib);
         });
