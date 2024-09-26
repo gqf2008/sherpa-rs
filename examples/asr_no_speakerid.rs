@@ -372,7 +372,7 @@ impl Transcoder {
         let context = ffmpeg::codec::context::Context::from_parameters(output.parameters())?;
         let mut encoder = context.encoder().audio()?;
 
-        let channel_layout = codec
+        let _channel_layout = codec
             .channel_layouts()
             .map(|cls| cls.best(decoder.channel_layout().channels()))
             .unwrap_or(ffmpeg::channel_layout::ChannelLayout::STEREO);
