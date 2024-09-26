@@ -25,4 +25,3 @@ rustflags = [
 
 
 [target.x86_64-unknown-linux-gnu]
-# rustflags = ["-lssl", "-lcrypto", "-ldl", "-lpthread"]
