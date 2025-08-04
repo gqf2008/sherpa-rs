@@ -28,17 +28,19 @@ handlebars = "6.1.0"
 anyhow = "1.0.89"
 serde_json = "1.0.128"
 serde = { version = "1.0.210", features = ["derive"] }
+sha2 = "0.10.9"
+
 [dev-dependencies]
 clap = { version = "4.5.18", features = ["derive"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-ffmpeg-next = { version = "7.0.2" }
+ffmpeg-next = { version = "7.1.0", features = ["static", "build"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-ffmpeg-next = { version = "7.0.2", features = ["build-lib-openssl"] }
+ffmpeg-next = { version = "7.1.0", features = ["build-lib-openssl"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-ffmpeg-next = { version = "7.0.2", features = ["build-lib-openssl"] }
+ffmpeg-next = { version = "7.1.0", features = ["build-lib-openssl"] }
 
 [workspace]
 members = ["sys"]
